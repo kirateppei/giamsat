@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Giám sát NLMT</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1d2733;--muted:#6b7785;--line:#e3e8ee;--ok:#1e9e5a;--warn:#e0a100;--bad:#d64545;--gray:#9aa6b2;--pri:#1f4e79}
+@media (prefers-color-scheme:dark){:root{--bg:#11161c;--card:#1a222b;--ink:#e6edf3;--muted:#93a1ae;--line:#2a3541;--pri:#5aa0e0}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header h1{font-size:17px;margin:0;flex:1}header .u{font-size:12px;color:var(--muted);text-align:right}
+main{max-width:1100px;margin:0 auto;padding:12px 16px 40px}
+.lock{max-width:340px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center}
+.lock input{width:100%;font-size:20px;padding:10px;border:1px solid var(--line);border-radius:10px;text-align:center;margin:12px 0;background:var(--bg);color:var(--ink)}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px;cursor:pointer}
+button.pri{background:var(--pri);color:#fff;border-color:var(--pri);width:100%}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+.k{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}.k span{font-size:12px;color:var(--muted)}.k b{display:block;font-size:22px}.k em{font-style:normal;font-size:12px;color:var(--muted)}
+.msg{border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px;background:#fff4d6;color:#6b5200}.msg.bad{background:#fde3e3;color:#8a1f1f}
+@media (prefers-color-scheme:dark){.msg{background:#3a3115;color:#f3dd9a}.msg.bad{background:#3d1d1d;color:#f3b0b0}}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.bar select,.bar input{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);flex:1;min-width:140px}
+.chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}.chips button{white-space:nowrap;border-radius:999px;padding:6px 12px;font-size:14px}.chips button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;gap:10px}
+.st.bad{border-color:var(--bad)}.dot{width:12px;height:12px;border-radius:50%;margin-top:5px;flex:none;background:var(--gray)}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.off,.dot.inc{background:var(--bad)}
+.st .nm{font-weight:600}.st .sub{font-size:12px;color:var(--muted)}.st .r{margin-left:auto;text-align:right;white-space:nowrap}.st .r b{font-size:16px}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 8px;background:var(--bg);margin-top:2px}.tag.ok{color:var(--ok)}.tag.bad{color:var(--bad)}.tag.warn{color:#9a6c00}
+.iss{font-size:13px;color:var(--bad);margin-top:3px}.iss.w{color:#9a6c00}
+h2{font-size:16px;margin:18px 0 8px}
+.ev{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-size:14px}.ev.w{border-left-color:var(--warn)}
+.muted{color:var(--muted)}.hidden{display:none!important}
+.st{cursor:pointer}.st:hover{border-color:var(--pri)}
+.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}.tabs a{white-space:nowrap;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px}
+.tabs a.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+table.co{width:100%;border-collapse:collapse;font-size:14px}table.co td,table.co th{padding:6px;border-bottom:1px solid var(--line);text-align:left}table.co .r{text-align:right}
+.ev.d{border-left-color:var(--ok)}
+.back{margin-bottom:10px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.card h3{font-size:15px;margin:0 0 8px}.chart{width:100%;height:auto;display:block}
+table.inv{width:100%;border-collapse:collapse;font-size:14px}table.inv th,table.inv td{padding:6px;border-bottom:1px solid var(--line);text-align:left}
+table.inv td.r,table.inv th.r{text-align:right}table.inv tr.skip td{color:var(--muted)}
+@media (max-width:600px){table.inv .hm{display:none}}
+</style>
+</head>
+<body>
+<header><h1>☀️ Giám sát điện mặt trời</h1><div class="u" id="upd"></div></header>
+<main>
+  <div id="lock" class="lock">
+    <div style="font-size:40px">🔒</div>
+    <b>Nhập mã PIN để xem</b>
+    <input id="pin" type="password" inputmode="text" autocomplete="current-password" placeholder="Mã PIN">
+    <label class="muted" style="font-size:13px"><input type="checkbox" id="remember" checked> Ghi nhớ trên máy này</label>
+    <p><button class="pri" id="go">Xem</button></p>
+    <div id="err" class="muted" style="color:var(--bad)"></div>
+  </div>
+  <div id="app" class="hidden">
+    <div id="note"></div>
+    <nav class="tabs" id="tabs"><a href="#" data-t="">📊 Tổng quan</a><a href="#thang" data-t="thang">📈 Sản lượng tháng</a><a href="#suco" data-t="suco">🚨 Sự cố</a></nav>
+    <div id="page" class="hidden"></div>
+    <div id="home"><div class="kpis" id="kpis"></div>
+    <div class="chips" id="chips"></div>
+    <div class="bar"><select id="comp"></select><input id="q" placeholder="Tìm trạm…"></div>
+    <div class="grid" id="list"></div>
+    <h2 id="evh"></h2><div id="evs"></div></div>
+    <div id="detail" class="hidden"></div>
+    <p class="muted" style="font-size:12px;margin-top:20px">Trang chỉ để xem, tự cập nhật mỗi 2 phút (số liệu mới mỗi ~10 phút). Nhận / xử lý sự cố: dùng Telegram hoặc giao diện trên máy đang chạy phần mềm.
+      <a href="#" id="logout">Quên mã PIN trên máy này</a></p>
+  </div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=(v,d=0)=>v==null?"–":Number(v).toLocaleString("vi-VN",{maximumFractionDigits:d,minimumFractionDigits:0});
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+let PIN=store.get("hmt_pin")||"",DATA=null,F="all",keyCache={};
+async function decrypt(enc,pin){
+  const id=pin+"|"+enc.salt+"|"+enc.iter;
+  if(!keyCache[id]){
+    const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pin),"PBKDF2",false,["deriveKey"]);
+    keyCache={[id]:await crypto.subtle.deriveKey({name:"PBKDF2",salt:b64(enc.salt),iterations:enc.iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"])};
+  }
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(enc.iv)},keyCache[id],b64(enc.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function load(){
+  const r=await fetch("data.json?t="+Date.now(),{cache:"no-store"});
+  if(!r.ok)throw new Error("Chưa có số liệu ("+r.status+")");
+  return decrypt(await r.json(),PIN);
+}
+async function unlock(){
+  $("#err").textContent="Đang mở…";
+  try{DATA=await load();if($("#remember").checked)store.set("hmt_pin",PIN);
+    $("#lock").classList.add("hidden");$("#app").classList.remove("hidden");$("#err").textContent="";render()}
+  catch(e){$("#err").textContent=e.name==="OperationError"?"Sai mã PIN":(e.message||"Không mở được");store.del("hmt_pin")}
+}
+$("#go").onclick=()=>{PIN=$("#pin").value.trim();if(PIN)unlock()};
+$("#pin").onkeydown=e=>{if(e.key==="Enter")$("#go").click()};
+$("#logout").onclick=e=>{e.preventDefault();store.del("hmt_pin");location.reload()};
+const ST={ok:["ok","Bình thường"],warn:["warn","Cần kiểm tra"],off:["off","Ngoại tuyến"],nodata:["","Chưa có số liệu mới"],inc:["inc","Có sự cố"]};
+function stateOf(s){return s.o?"inc":s.st}
+function render(){
+  const d=DATA;
+  if(route())return;
+  const ageMin=Math.round((Date.now()-new Date(d.ts).getTime())/60000);
+  $("#upd").innerHTML=`Cập nhật ${esc(d.luc)}<br>máy chạy: ${esc(d.may)}`;
+  let note="";
+  if(ageMin>40)note+=`<div class="msg bad">⚠️ Trang chưa được cập nhật ${ageMin} phút - máy chạy phần mềm có thể đang tắt / mất mạng.</div>`;
+  if(d.night)note+=`<div class="msg">🌙 Ban đêm: phần mềm chỉ lấy số liệu ${esc(d.hours)}, số liệu mới nhất lúc ${esc(d.last)}.</div>`;
+  $("#note").innerHTML=note;
+  const inc=d.events.filter(e=>!e.w).length,wn=d.events.filter(e=>e.w).length;
+  const k=(l,v,s="")=>`<div class="k"><span>${l}</span><b>${v}</b><em>${s}</em></div>`;
+  $("#kpis").innerHTML=k("Công suất hiện tại",num(d.power,1)+" kW",d.kwp?Math.round(100*d.power/(d.kwp))+"% lắp đặt":"")+
+    k("Sản lượng hôm nay",d.energy>=10000?num(d.energy/1000,2)+" MWh":num(d.energy)+" kWh","≈ "+num(d.money)+" đ")+
+    k("Sản lượng tháng",num(d.month/1000,1)+" MWh")+k("Inverter hoạt động",`${num(d.stations.reduce((a,s)=>a+(s.st==="nodata"?0:(s.run||0)),0))}/${num(d.stations.reduce((a,s)=>a+(s.exp||0),0))}`)+
+    k("Sự cố đang mở",inc,wn?wn+" cảnh báo":"")+k("Công suất lắp đặt",num(d.kwp/1000,2)+" MWp",d.stations.length+" trạm");
+  const cnt=f=>d.stations.filter(s=>f==="all"||stateOf(s)===f).length;
+  $("#chips").innerHTML=[["all","Toàn bộ"],["inc","Sự cố"],["off","Ngoại tuyến"],["warn","Cần kiểm tra"],["ok","Bình thường"],["nodata","Chưa có số liệu"]]
+    .map(([f,l])=>`<button data-f="${f}" class="${F===f?"on":""}">${l} (${cnt(f)})</button>`).join("");
+  document.querySelectorAll("#chips button").forEach(b=>b.onclick=()=>{F=b.dataset.f;render()});
+  const cs=$("#comp"),cur=cs.value;
+  cs.innerHTML=`<option value="">Tất cả công ty</option>`+d.companies.map(c=>`<option${c===cur?" selected":""}>${esc(c)}</option>`).join("");
+  drawList();
+  $("#evh").textContent=d.events.length?`Sự cố / cảnh báo đang mở (${d.events.length})`:"Không có sự cố đang mở";
+  $("#evs").innerHTML=d.events.map(e=>`<div class="ev${e.w?" w":""}"><b>${esc(e.s)}</b>${e.d?" · "+esc(e.d):""}<div>${esc(e.k)}</div>
+    <div class="muted" style="font-size:12px">Từ ${esc(e.t)} · ${e.min>=60?Math.floor(e.min/60)+" giờ "+e.min%60+" phút":e.min+" phút"}${e.a?" · 🛠 "+esc(e.a):""}</div>${e.x?`<div style="font-size:13px">${esc(e.x)}</div>`:""}</div>`).join("");
+}
+function drawList(){
+  const d=DATA,q=$("#q").value.trim().toLowerCase(),c=$("#comp").value;
+  const order={inc:0,off:1,warn:2,nodata:3,ok:4};
+  const rows=d.stations.filter(s=>(F==="all"||stateOf(s)===F)&&(!c||s.c===c)&&(!q||s.n.toLowerCase().includes(q)))
+    .sort((a,b)=>(order[stateOf(a)]??5)-(order[stateOf(b)]??5)||a.n.localeCompare(b.n,"vi"));
+  $("#list").innerHTML=rows.map(s=>{const [cls,lab]=ST[stateOf(s)]||["",""];
+    const iss=[];if(s.o)iss.push(`🚨 ${s.o} sự cố`);if(s.off.length)iss.push(`⛔ ${s.off.length} ngoại tuyến`);if(s.zero.length)iss.push(`⚠️ ${s.zero.length} không phát`);
+    const tagc=cls==="ok"?"ok":(cls==="warn"?"warn":(cls?"bad":""));
+    return `<div class="st${cls==="inc"||cls==="off"?" bad":""}" data-k="${esc(s.key)}"><span class="dot ${cls}"></span><div style="min-width:0">
+      <div class="nm">${esc(s.n)}</div><div class="sub">${esc(s.v.toUpperCase())}${s.kwp?" · "+num(s.kwp)+" kWp":""}${s.c?" · "+esc(s.c):""}</div>
+      <span class="tag ${tagc}">${lab}</span>${iss.length?`<div class="iss">${iss.join(" · ")}</div>`:""}${s.rep.length?`<div class="iss w">🔧 ${s.rep.length} đang sửa</div>`:""}
+      ${s.off.length?`<div class="sub">${s.off.map(esc).join(", ")}</div>`:""}</div>
+      <div class="r"><b>${num(s.p,1)}</b> kW<div class="sub">${num(s.e)} kWh</div><div class="sub">${s.st==="nodata"?"?":num(s.run)}/${num(s.exp)} inv</div></div></div>`}).join("")||`<p class="muted">Không có trạm nào.</p>`;
+}
+$("#list").onclick=e=>{const c=e.target.closest(".st");if(c){fromList=true;location.hash="tram="+encodeURIComponent(c.dataset.k)}};let fromList=false;
+window.onhashchange=()=>{if(DATA)render()};
+// trang chi tiết 1 trạm: #tram=<hãng|mã>  (nút Back của trình duyệt / điện thoại quay về danh sách)
+function route(){
+  const m=location.hash.match(/^#tram=(.+)$/),s=m&&DATA.stations.find(x=>x.key===decodeURIComponent(m[1]));
+  const pg=s?"":(location.hash==="#thang"?"thang":location.hash==="#suco"?"suco":"");
+  document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",!s&&a.dataset.t===pg));
+  $("#tabs").classList.toggle("hidden",!!s);
+  $("#home").classList.toggle("hidden",!!s||!!pg);$("#detail").classList.toggle("hidden",!s);$("#page").classList.toggle("hidden",!pg);
+  if(pg){$("#upd").innerHTML=`Cập nhật ${esc(DATA.luc)}<br>máy chạy: ${esc(DATA.may)}`;(pg==="thang"?pageMonth:pageInc)();return true}
+  if(!s)return false;
+  $("#upd").innerHTML=`Cập nhật ${esc(DATA.luc)}<br>máy chạy: ${esc(DATA.may)}`;
+  const [cls,lab]=ST[stateOf(s)]||["",""],k=(l,v,x="")=>`<div class="k"><span>${l}</span><b>${v}</b><em>${x}</em></div>`;
+  const ev=DATA.events.filter(e=>e.key===s.key);
+  const inv=(s.inv||[]).filter(i=>!i.skip),sk=(s.inv||[]).filter(i=>i.skip);
+  const stv=i=>i.st==="ok"?'<span class="tag ok">Chạy</span>':i.st==="offline"?'<span class="tag bad">Ngoại tuyến</span>':
+    i.st==="fault"?'<span class="tag bad">Lỗi</span>':i.st==="idle"?'<span class="tag">Chờ / nghỉ</span>':`<span class="tag">${esc(i.st||"–")}</span>`;
+  const dur=m=>m>=60?Math.floor(m/60)+" giờ "+m%60+" phút":m+" phút";
+  const row=(i,c="")=>`<tr class="${c}"><td>${esc(i.n)}<div class="muted" style="font-size:12px">${esc(i.sn)}</div></td><td class="r">${num(i.kw,1)}</td><td class="r">${num(i.e,1)}</td>
+    <td class="r hm"${i.t>=75?' style="color:var(--bad);font-weight:700"':""}>${i.t?num(i.t,1)+"°":"–"}</td><td class="r"${i.ch&&i.ch[0]<i.ch[1]?' style="color:var(--bad);font-weight:700"':""} title="${i.ch?"ngày "+i.ch[2]:""}">${i.ch?i.ch[0]+"/"+i.ch[1]:"–"}</td><td>${c?'<span class="tag">Đang sửa / tháo</span>':stv(i)}</td><td class="hm muted">${esc(i.ts)}</td></tr>`;
+  $("#detail").innerHTML=`<button class="back" id="bk">‹ Danh sách trạm</button>
+    <div class="card"><div style="display:flex;gap:10px;align-items:center"><span class="dot ${cls}" style="margin:0"></span><h2 style="margin:0;flex:1">${esc(s.n)}</h2><span class="tag">${lab}</span></div>
+      <div class="muted" style="font-size:13px;margin-top:4px">${esc(s.v.toUpperCase())}${s.kwp?" · "+num(s.kwp)+" kWp":""}${s.c?" · "+esc(s.c):""}${s.addr?" · "+esc(s.addr):""}${s.u?" · số liệu lúc "+esc(s.u):""}</div></div>
+    <div class="kpis">${k("Công suất hiện tại",num(s.p,1)+" kW",s.kwp?Math.round(100*s.p/s.kwp)+"% lắp đặt":"")}${k("Sản lượng hôm nay",num(s.e)+" kWh",s.kwp&&s.e?num(s.e/s.kwp,2)+" kWh/kWp":"")}
+      ${k("Sản lượng tháng",s.m>=10000?num(s.m/1000,2)+" MWh":num(s.m)+" kWh")}${k("Inverter",`${s.st==="nodata"?"?":num(s.run)}/${num(s.exp)}`,s.rep.length?s.rep.length+" đang sửa":"")}</div>
+    ${ev.length?`<div class="card"><h3>Sự cố / cảnh báo đang mở (${ev.length})</h3>${ev.map(e=>`<div class="ev${e.w?" w":""}">${e.d?"<b>"+esc(e.d)+"</b> · ":""}${esc(e.k)}
+      <div class="muted" style="font-size:12px">Từ ${esc(e.t)} · ${dur(e.min)}${e.a?" · 🛠 "+esc(e.a):""}</div>${e.x?`<div style="font-size:13px">${esc(e.x)}</div>`:""}</div>`).join("")}</div>`:""}
+    <div class="card"><h3>Công suất trong ngày (kW)</h3>${lineChart(s.sp)}</div>
+    <div class="card"><h3>Sản lượng từng ngày trong tháng (kWh)</h3>${barChart(s.days||[])}</div>
+    <div class="card"><h3>Inverter (${inv.length})</h3><table class="inv"><tr><th>Inverter</th><th class="r">kW</th><th class="r">kWh hôm nay</th><th class="r hm">Nhiệt độ</th><th class="r" title="Số chuỗi chạy / mức chuẩn (ngày thống kê gần nhất)">Chuỗi</th><th>Trạng thái</th><th class="hm">Lúc</th></tr>
+      ${inv.map(i=>row(i)).join("")}${sk.map(i=>row(i,"skip")).join("")}</table>${s.off.length?`<p class="iss">⛔ Ngoại tuyến: ${s.off.map(esc).join(", ")}</p>`:""}</div>`;
+  $("#bk").onclick=()=>{if(fromList){fromList=false;history.back()}else location.hash=""};
+  window.scrollTo(0,0);return true;
+}
+// Sản lượng từng ngày trong tháng: toàn bộ + từng công ty (cộng từ số từng trạm)
+let moComp="";
+function pageMonth(){
+  const st=DATA.stations.filter(s=>s.days&&s.days.length),n=Math.max(0,...st.map(s=>s.days.length));
+  const sum=list=>[...Array(n)].map((_,i)=>list.reduce((a,s)=>a+(s.days[i]||0),0));
+  const comps=[...new Set(st.map(s=>s.c||"(khác)"))].sort((a,b)=>a.localeCompare(b,"vi"));
+  const sel=st.filter(s=>!moComp||(s.c||"(khác)")===moComp),days=sum(sel),tot=days.reduce((a,b)=>a+b,0);
+  const today=new Date().getDate(),dn=days.slice(0,Math.min(today,n)).filter(x=>x>0).length;
+  const rows=comps.map(c=>{const l=st.filter(s=>(s.c||"(khác)")===c),t=l.reduce((a,s)=>a+s.days.reduce((x,y)=>x+y,0),0),kwp=l.reduce((a,s)=>a+(s.kwp||0),0);
+    return {c,t,kwp,n:l.length}}).sort((a,b)=>b.t-a.t);
+  $("#page").innerHTML=`<div class="bar"><select id="moc"><option value="">Toàn bộ</option>${comps.map(c=>`<option${c===moComp?" selected":""}>${esc(c)}</option>`).join("")}</select></div>
+    <div class="kpis"><div class="k"><span>Sản lượng tháng ${esc(DATA.month_label||"")}</span><b>${tot>=10000?num(tot/1000,1)+" MWh":num(tot)+" kWh"}</b><em>${sel.length} trạm</em></div>
+      <div class="k"><span>Trung bình / ngày</span><b>${dn?(tot/dn>=10000?num(tot/dn/1000,1)+" MWh":num(tot/dn)+" kWh"):"–"}</b><em>${dn} ngày có số liệu</em></div>
+      <div class="k"><span>Cao nhất</span><b>${num(Math.max(0,...days)/(Math.max(0,...days)>=10000?1000:1),Math.max(0,...days)>=10000?1:0)} ${Math.max(0,...days)>=10000?"MWh":"kWh"}</b><em>ngày ${days.indexOf(Math.max(...days))+1}</em></div></div>
+    <div class="card"><h3>Sản lượng từng ngày (kWh)${moComp?" - "+esc(moComp):""}</h3>${barChart(days)}</div>
+    <div class="card"><h3>Theo công ty</h3><table class="co"><tr><th>Công ty</th><th class="r">Trạm</th><th class="r">MWh tháng</th><th class="r">kWh/kWp</th></tr>
+      ${rows.map(r=>`<tr data-c="${esc(r.c)}" style="cursor:pointer"><td>${esc(r.c)}</td><td class="r">${r.n}</td><td class="r">${num(r.t/1000,1)}</td><td class="r">${r.kwp?num(r.t/r.kwp,1):"–"}</td></tr>`).join("")}</table>
+      <p class="muted" style="font-size:12px">Bấm vào công ty để xem biểu đồ riêng. Trạm Huawei nhập từ file không tính ở đây.</p></div>`;
+  $("#moc").onchange=e=>{moComp=e.target.value;pageMonth()};
+  document.querySelectorAll("#page tr[data-c]").forEach(t=>t.onclick=()=>{moComp=t.dataset.c;pageMonth();window.scrollTo(0,0)});
+}
+// Sự cố: đang mở + đã kết thúc hôm nay
+function pageInc(){
+  const dur=m=>m>=60?Math.floor(m/60)+" giờ "+m%60+" phút":m+" phút";
+  const op=DATA.events.filter(e=>!e.w),wn=DATA.events.filter(e=>e.w),dn=DATA.done||[];
+  const card=(e,cls,done)=>`<div class="ev ${cls}" ${e.key?`data-k="${esc(e.key)}" style="cursor:pointer"`:""}><b>${esc(e.s)}</b>${e.d?" · "+esc(e.d):""}<div>${esc(e.k)}</div>
+    <div class="muted" style="font-size:12px">${done?`${esc(e.t)}–${esc(e.end)} · ${dur(e.min)}${e.h?" · ✔ "+esc(e.h):""}`:`Từ ${esc(e.t)} · ${dur(e.min)}${e.a?" · 🛠 "+esc(e.a):" · chưa ai nhận"}`}</div>${e.x?`<div style="font-size:13px">${esc(e.x)}</div>`:""}</div>`;
+  $("#page").innerHTML=`<div class="kpis"><div class="k"><span>Sự cố đang mở</span><b style="color:var(--bad)">${op.length}</b></div><div class="k"><span>Cảnh báo (string, nhiệt độ)</span><b style="color:#9a6c00">${wn.length}</b></div><div class="k"><span>Đã hết hôm nay</span><b style="color:var(--ok)">${dn.length}</b></div></div>
+    <h2>🚨 Sự cố đang mở (${op.length})</h2>${op.map(e=>card(e,"",false)).join("")||'<p class="muted">Không có.</p>'}
+    <h2>⚠️ Cảnh báo đang mở (${wn.length})</h2>${wn.map(e=>card(e,"w",false)).join("")||'<p class="muted">Không có.</p>'}
+    <h2>✅ Đã hết hôm nay (${dn.length})</h2>${dn.map(e=>card(e,"d",true)).join("")||'<p class="muted">Không có.</p>'}
+    <p class="muted" style="font-size:12px">Bấm vào sự cố để mở trang chi tiết trạm. Nhận / xử lý sự cố: dùng Telegram.</p>`;
+  document.querySelectorAll("#page .ev[data-k]").forEach(c=>c.onclick=()=>{fromList=true;location.hash="tram="+encodeURIComponent(c.dataset.k)});
+}
+function lineChart(sp){
+  const v=(sp||[]).map(x=>x==null?null:+x),ok=v.filter(x=>x!=null);
+  if(!ok.length)return '<p class="muted">Chưa có số liệu hôm nay.</p>';
+  const mx=Math.max(1,...ok),W=600,H=180,L=36,B=22,X=i=>L+(W-L-6)*i/41,Y=y=>H-B-(H-B-8)*y/mx;let p="",open=false;
+  v.forEach((y,i)=>{if(y==null){open=false;return}p+=(open?"L":"M")+X(i).toFixed(1)+" "+Y(y).toFixed(1)+" ";open=true});
+  const ticks=[5,8,11,14,17,19].map(h=>`<text x="${X(Math.min((h-5)*3,41)).toFixed(1)}" y="${H-6}" font-size="11" text-anchor="middle" fill="currentColor" opacity=".6">${h}h</text>`).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}"><line x1="${L}" y1="${H-B}" x2="${W}" y2="${H-B}" stroke="currentColor" opacity=".2"/>
+    <text x="2" y="14" font-size="11" fill="currentColor" opacity=".6">${num(mx)}</text><path d="${p}" fill="none" stroke="var(--pri)" stroke-width="2"/>${ticks}</svg>`;
+}
+function barChart(days){
+  if(!days.some(x=>x>0))return '<p class="muted">Chưa có số liệu tháng này.</p>';
+  const mx=Math.max(1,...days),W=600,H=170,L=36,B=22,bw=(W-L-6)/days.length;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}"><text x="2" y="14" font-size="11" fill="currentColor" opacity=".6">${num(mx)}</text>`+
+    days.map((y,i)=>{const h=(H-B-8)*y/mx;return `<rect x="${(L+i*bw+1).toFixed(1)}" y="${(H-B-h).toFixed(1)}" width="${Math.max(1,bw-2).toFixed(1)}" height="${h.toFixed(1)}" fill="var(--pri)" opacity=".8"><title>Ngày ${i+1}: ${num(y)} kWh</title></rect>`+
+      ((i+1)%5===0||i===0?`<text x="${(L+i*bw+bw/2).toFixed(1)}" y="${H-6}" font-size="11" text-anchor="middle" fill="currentColor" opacity=".6">${i+1}</text>`:"")}).join("")+`</svg>`;
+}
+$("#q").oninput=()=>DATA&&drawList();$("#comp").onchange=()=>DATA&&drawList();
+setInterval(async()=>{if(!DATA)return;try{DATA=await load();render()}catch(e){}},120000);
+if(PIN){$("#remember").checked=true;unlock()}
+</script>
+</body>
+</html>
